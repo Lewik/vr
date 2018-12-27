@@ -27,8 +27,10 @@ class Screenshooter @Autowired constructor(
     }
 
     fun startScreenshoting() {
+        println("Screenshoting")
         val screenSize = Toolkit.getDefaultToolkit().screenSize
-        val shot = robot.createScreenCapture(Rectangle(screenSize))
+//        val shot = robot.createScreenCapture(Rectangle(screenSize))
+        val shot = robot.createScreenCapture(Rectangle(50, 50))
         val colors = mutableListOf<Int>()
         (0 until shot.width).forEach { x ->
             (0 until shot.height).forEach { y ->

@@ -7,6 +7,7 @@ import org.springframework.integration.dsl.IntegrationFlows
 import org.springframework.integration.dsl.MessageChannels
 import org.springframework.integration.ip.dsl.Tcp
 import org.springframework.integration.ip.tcp.connection.TcpNioServerConnectionFactory
+import org.springframework.integration.ip.tcp.serializer.TcpCodecs
 
 @EnableIntegration
 @Configuration
@@ -14,36 +15,21 @@ class Config {
 
     @Bean
     fun input(
-        serverInputConnectionFactory: TcpNioServerConnectionFactory
-    ) = IntegrationFlows.from(Tcp.inboundAdapter(serverInputConnectionFactory))
-        .channel(outputChannel())
-        .get()!!
-
-
-    @Bean
-    fun outputChannel() = MessageChannels.publishSubscribe()!!
-
-
-    @Bean
-    fun output(
-        serverOutputConnectionFactory: TcpNioServerConnectionFactory
-    ) = IntegrationFlows.from(outputChannel())
-        .handle(Tcp.outboundAdapter(serverOutputConnectionFactory))
+        serverConnectionFactory: TcpNioServerConnectionFactory
+    ) = IntegrationFlows
+        .from(Tcp.inboundAdapter(serverConnectionFactory))
+        .handle { payload: Any, _ -> println("Received");payload }
+        .channel(MessageChannels.queue())
+        .bridge { it.poller { p -> p.fixedRate(0) } }
+        .handle(Tcp.outboundAdapter(serverConnectionFactory))
         .get()!!
 
     @Bean
-    fun serverInputConnectionFactory(): TcpNioServerConnectionFactory {
-        val factory = TcpNioServerConnectionFactory(10000)
+    fun serverConnectionFactory(): TcpNioServerConnectionFactory {
+        val factory = TcpNioServerConnectionFactory(61000)
+        factory.deserializer = TcpCodecs.lengthHeader4()
+        factory.serializer = TcpCodecs.lengthHeader4()
         factory.isSingleUse = false
-        factory.soTimeout = 300000
-        return factory
-    }
-
-    @Bean
-    fun serverOutputConnectionFactory(): TcpNioServerConnectionFactory {
-        val factory = TcpNioServerConnectionFactory(11000)
-        factory.isSingleUse = false
-        factory.soTimeout = 300000
         return factory
     }
 }
