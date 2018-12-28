@@ -4,15 +4,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Packet(
-    val fullFrame: FullFrame? = null,
+    val partFrame: PartFrame? = null,
     val deltaFrame: DeltaFrame? = null
 )
 
 interface VrFrame
 @Serializable
-data class FullFrame(
+data class PartFrame(
     val width: Int,
     val height: Int,
+    val x: Int,
+    val y: Int,
     val colors: List<Int>
 ) : VrFrame
 

@@ -29,8 +29,24 @@ class Screenshooter @Autowired constructor(
     fun startScreenshoting() {
         println("Screenshoting")
         val screenSize = Toolkit.getDefaultToolkit().screenSize
-//        val shot = robot.createScreenCapture(Rectangle(screenSize))
-        val shot = robot.createScreenCapture(Rectangle(50, 50))
+
+        val frameWidth = 50
+        val frameHeight = 50
+
+        for (x in 0..screenSize.width step 50) {
+            for (y in 0..screenSize.height step 50) {
+                sendFrame(x, y, frameWidth, frameHeight)
+            }
+        }
+
+
+        if (timerDelay != null) {
+            Timer("", false).schedule(timerDelay!!) { startScreenshoting() }
+        }
+    }
+
+    private fun sendFrame(x: Int, y: Int, frameWidth: Int, frameHeight: Int) {
+        val shot = robot.createScreenCapture(Rectangle(x, y, frameWidth, frameHeight))
         val colors = mutableListOf<Int>()
         (0 until shot.width).forEach { x ->
             (0 until shot.height).forEach { y ->
@@ -40,16 +56,14 @@ class Screenshooter @Autowired constructor(
         }
         sendGateway.send(
             Packet(
-                fullFrame = FullFrame(
+                partFrame = PartFrame(
                     width = shot.width,
                     height = shot.height,
-                    colors = colors
+                    colors = colors,
+                    x = x,
+                    y = y
                 )
             )
         )
-
-        if (timerDelay != null) {
-            Timer("", false).schedule(timerDelay!!) { startScreenshoting() }
-        }
     }
 }

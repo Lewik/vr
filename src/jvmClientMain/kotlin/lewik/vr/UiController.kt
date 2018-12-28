@@ -19,15 +19,20 @@ class UiController @Autowired constructor(
     }
 
     fun updateWith(packet: Packet) {
-        val graphics = ui.graphics
+        val graphics = ui.drawPanel.graphics
 
-        if (packet.fullFrame != null) {
-            val frame = packet.fullFrame
+        if (packet.partFrame != null) {
+            val frame = packet.partFrame
             var i = 0
             (0 until frame.width).forEach { x ->
                 (0 until frame.height).forEach { y ->
                     graphics.color = Color(frame.colors[i++])
-                    graphics.drawLine(x, y, x, y)
+                    graphics.drawLine(
+                        frame.x + x,
+                        frame.y + y,
+                        frame.x + x,
+                        frame.y + y
+                    )
                 }
             }
         }
