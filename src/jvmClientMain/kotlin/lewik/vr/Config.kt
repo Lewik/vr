@@ -13,9 +13,8 @@ import org.springframework.integration.dsl.IntegrationFlows
 import org.springframework.integration.dsl.MessageChannels
 import org.springframework.integration.ip.dsl.Tcp
 import org.springframework.integration.ip.tcp.TcpSendingMessageHandler
-import org.springframework.integration.ip.tcp.connection.TcpNioClientConnectionFactory
+import org.springframework.integration.ip.tcp.connection.TcpNetClientConnectionFactory
 import org.springframework.integration.ip.tcp.serializer.TcpCodecs
-import org.springframework.integration.support.MessageBuilder
 
 
 @EnableIntegration
@@ -28,9 +27,10 @@ class Config {
 
     @Bean
     fun send(
-        clientConnectionFactory: TcpNioClientConnectionFactory,
+        clientConnectionFactory: TcpNetClientConnectionFactory,
         uiController: UiController
-    ) = IntegrationFlows.from("outputChannel")
+    ) = IntegrationFlows
+        .from("outputChannel")
         .transform { packet: Packet -> CBOR().dump(packet) }
         .channel(MessageChannels.queue())
         .bridge { it.poller { p -> p.fixedRate(0) } }
@@ -44,12 +44,13 @@ class Config {
 
     @Bean
     fun input(
-        clientConnectionFactory: TcpNioClientConnectionFactory,
+        clientConnectionFactory: TcpNetClientConnectionFactory,
         uiController: UiController
-    ) = IntegrationFlows.from(Tcp.inboundAdapter(clientConnectionFactory).also {
-        it.clientMode(true)
-        // it.autoStartup(true)
-    })
+    ) = IntegrationFlows
+        .from(Tcp.inboundAdapter(clientConnectionFactory).also {
+            it.clientMode(true)
+            // it.autoStartup(true)
+        })
         .handle { payload: ByteArray, _ -> println("Receiving ${payload.size}");payload }
         .channel(MessageChannels.queue())
         .bridge { it.poller { p -> p.fixedRate(0) } }
@@ -59,11 +60,11 @@ class Config {
 
 
     @Bean
-    fun clientConnectionFactory(): TcpNioClientConnectionFactory {
-        val factory = TcpNioClientConnectionFactory("localhost", 61000)
+    fun clientConnectionFactory(): TcpNetClientConnectionFactory {
+        val factory = TcpNetClientConnectionFactory("localhost", 61000)
         factory.isSingleUse = false
-        factory.deserializer = TcpCodecs.lengthHeader4()
-        factory.serializer = TcpCodecs.lengthHeader4()
+        factory.deserializer = TcpCodecs.lengthHeader4().also { it.maxMessageSize = Short.MAX_VALUE.toInt() }
+        factory.serializer = TcpCodecs.lengthHeader4().also { it.maxMessageSize = Short.MAX_VALUE.toInt() }
         return factory
     }
 }

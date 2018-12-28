@@ -6,7 +6,7 @@ import org.springframework.integration.config.EnableIntegration
 import org.springframework.integration.dsl.IntegrationFlows
 import org.springframework.integration.dsl.MessageChannels
 import org.springframework.integration.ip.dsl.Tcp
-import org.springframework.integration.ip.tcp.connection.TcpNioServerConnectionFactory
+import org.springframework.integration.ip.tcp.connection.TcpNetServerConnectionFactory
 import org.springframework.integration.ip.tcp.serializer.TcpCodecs
 
 @EnableIntegration
@@ -15,7 +15,7 @@ class Config {
 
     @Bean
     fun input(
-        serverConnectionFactory: TcpNioServerConnectionFactory
+        serverConnectionFactory: TcpNetServerConnectionFactory
     ) = IntegrationFlows
         .from(Tcp.inboundAdapter(serverConnectionFactory))
         .handle { payload: Any, _ -> println("Received");payload }
@@ -25,10 +25,10 @@ class Config {
         .get()!!
 
     @Bean
-    fun serverConnectionFactory(): TcpNioServerConnectionFactory {
-        val factory = TcpNioServerConnectionFactory(61000)
-        factory.deserializer = TcpCodecs.lengthHeader4()
-        factory.serializer = TcpCodecs.lengthHeader4()
+    fun serverConnectionFactory(): TcpNetServerConnectionFactory {
+        val factory = TcpNetServerConnectionFactory(61000)
+        factory.deserializer = TcpCodecs.lengthHeader4().also { it.maxMessageSize = Short.MAX_VALUE.toInt() }
+        factory.serializer = TcpCodecs.lengthHeader4().also { it.maxMessageSize = Short.MAX_VALUE.toInt() }
         factory.isSingleUse = false
         return factory
     }
