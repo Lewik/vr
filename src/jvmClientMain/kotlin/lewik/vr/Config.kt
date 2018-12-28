@@ -21,20 +21,27 @@ import org.springframework.integration.ip.tcp.serializer.TcpCodecs
 @IntegrationComponentScan
 @Configuration
 class Config {
-
     @Bean
     fun outputChannel() = MessageChannels.direct("outputChannel")!!
 
     @Bean
+    fun uiChannel() = MessageChannels.queue("uiChannel")!!
+
+    @Bean
     fun send(
         clientConnectionFactory: TcpNetClientConnectionFactory,
-        uiController: UiController
+        uiController: UiController,
+        speedCalculator: SpeedCalculator
     ) = IntegrationFlows
         .from("outputChannel")
-        .transform { packet: Packet -> CBOR().dump(packet) }
+        .transform { networkPacket: NetworkPacket -> CBOR().dump(networkPacket) }
         .channel(MessageChannels.queue())
         .bridge { it.poller { p -> p.fixedRate(0) } }
         .handle { payload: ByteArray, _ -> println("Sending ${payload.size} ${payload.size.toShort()}");payload }
+        .handle { payload: ByteArray, _ ->
+            speedCalculator.handle(payload)
+            payload
+        }
         .handle(TcpSendingMessageHandler().also {
             it.setConnectionFactory(clientConnectionFactory)
             it.isClientMode = true
@@ -54,8 +61,27 @@ class Config {
         .handle { payload: ByteArray, _ -> println("Receiving ${payload.size}");payload }
         .channel(MessageChannels.queue())
         .bridge { it.poller { p -> p.fixedRate(0) } }
-        .transform { payload: ByteArray -> CBOR.load<Packet>(payload) }
-        .handle { payload: Packet, _ -> uiController.updateWith(payload);null }
+        .transform { payload: ByteArray -> CBOR.load<NetworkPacket>(payload) }
+        .transform { payload: NetworkPacket ->
+            if (payload.deltaFrame != null) {
+                payload.deltaFrame
+            } else if (payload.partFrame != null) {
+                payload.partFrame
+            } else {
+                throw IllegalArgumentException(payload.toString())
+            }
+        }
+        .channel(uiChannel())
+        .get()!!
+
+
+    @Bean
+    fun uiInput(
+        uiController: UiController
+    ) = IntegrationFlows
+        .from(uiChannel())
+        .bridge { it.poller { p -> p.fixedRate(0) } }
+        .handle { payload: UiPacket, _ -> uiController.updateWith(payload);null }
         .get()!!
 
 
@@ -73,5 +99,11 @@ class Config {
 @MessagingGateway
 interface SendGateway {
     @Gateway(requestChannel = "outputChannel")
-    fun send(packet: Packet)
+    fun send(networkPacket: NetworkPacket)
+}
+
+@MessagingGateway
+interface UiGateway {
+    @Gateway(requestChannel = "uiChannel")
+    fun send(packet: UiPacket)
 }

@@ -2,13 +2,17 @@ package lewik.vr
 
 import kotlinx.serialization.Serializable
 
+
+interface UiPacket
+
 @Serializable
-data class Packet(
+data class NetworkPacket(
     val partFrame: PartFrame? = null,
     val deltaFrame: DeltaFrame? = null
 )
 
-interface VrFrame
+interface VrFrame : UiPacket
+
 @Serializable
 data class PartFrame(
     val width: Int,
@@ -22,3 +26,9 @@ data class PartFrame(
 data class DeltaFrame(
     val colors: List<Triple<Int, Int, Int>>
 ) : VrFrame
+
+
+@Serializable
+data class Speed(
+    val speed: Int
+) : UiPacket

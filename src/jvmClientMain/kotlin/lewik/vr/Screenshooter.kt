@@ -55,7 +55,7 @@ class Screenshooter @Autowired constructor(
             }
         }
         sendGateway.send(
-            Packet(
+            NetworkPacket(
                 partFrame = PartFrame(
                     width = shot.width,
                     height = shot.height,

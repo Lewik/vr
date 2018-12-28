@@ -2,14 +2,12 @@ package lewik.vr
 
 import java.awt.BorderLayout
 import java.awt.Dimension
-import javax.swing.JButton
-import javax.swing.JFrame
-import javax.swing.JPanel
-import javax.swing.SpringLayout
+import javax.swing.*
 
 
 class Ui(uiController: UiController) : JFrame() {
     lateinit var drawPanel: JPanel
+    lateinit var speed: JTextPane
 
     init {
         this.preferredSize = Dimension(400, 400)
@@ -19,6 +17,9 @@ class Ui(uiController: UiController) : JFrame() {
             uiController.toggleScreenshooting()
         }
 
+        speed = JTextPane()
+
+
         drawPanel = JPanel()
         drawPanel.layout = SpringLayout()
         drawPanel.preferredSize = Dimension(300, 300)
@@ -27,6 +28,7 @@ class Ui(uiController: UiController) : JFrame() {
         //container.layout = SpringLayout()
         container.add(button, BorderLayout.PAGE_START)
         container.add(drawPanel, BorderLayout.CENTER)
+        container.add(speed, BorderLayout.PAGE_END)
 
         this.pack()
         this.isVisible = true

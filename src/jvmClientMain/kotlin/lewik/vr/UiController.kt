@@ -18,22 +18,31 @@ class UiController @Autowired constructor(
         Timer("", false).schedule(1000) { ui = Ui(that) }
     }
 
-    fun updateWith(packet: Packet) {
-        val graphics = ui.drawPanel.graphics
+    fun updateWith(networkPacket: NetworkPacket) {
+        if (networkPacket.partFrame != null) {
+            updateWith(networkPacket.partFrame)
+        }
+    }
 
-        if (packet.partFrame != null) {
-            val frame = packet.partFrame
-            var i = 0
-            (0 until frame.width).forEach { x ->
-                (0 until frame.height).forEach { y ->
-                    graphics.color = Color(frame.colors[i++])
-                    graphics.drawLine(
-                        frame.x + x,
-                        frame.y + y,
-                        frame.x + x,
-                        frame.y + y
-                    )
+    fun updateWith(packet: UiPacket) {
+        when (packet) {
+            is PartFrame -> {
+                val graphics = ui.drawPanel.graphics
+                var i = 0
+                (0 until packet.width).forEach { x ->
+                    (0 until packet.height).forEach { y ->
+                        graphics.color = Color(packet.colors[i++])
+                        graphics.drawLine(
+                            packet.x + x,
+                            packet.y + y,
+                            packet.x + x,
+                            packet.y + y
+                        )
+                    }
                 }
+            }
+            is Speed -> {
+                ui.speed.text = packet.speed.toString()
             }
         }
     }
