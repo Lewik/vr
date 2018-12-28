@@ -73,8 +73,6 @@ dependencies {
     compile "org.springframework.integration:spring-integration-ip"
 }
 
-//TODO : find why spring boot can't find Application
-mainClassName = 'com.tavrida.electroscada.commander.Application'
 
 compileKotlin(kotlinJavaOptions)
 compileTestKotlin(kotlinJavaOptions)
