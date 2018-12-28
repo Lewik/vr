@@ -45,8 +45,12 @@ class Screenshooter @Autowired constructor(
         }
     }
 
+    val sentFrames = mutableMapOf<Int, MutableMap<Int, List<Int>>>()
+
+
     private fun sendFrame(x: Int, y: Int, frameWidth: Int, frameHeight: Int) {
         val shot = robot.createScreenCapture(Rectangle(x, y, frameWidth, frameHeight))
+
         val colors = mutableListOf<Int>()
         (0 until shot.width).forEach { x ->
             (0 until shot.height).forEach { y ->
@@ -54,16 +58,28 @@ class Screenshooter @Autowired constructor(
                 colors.add(color)
             }
         }
-        sendGateway.send(
-            NetworkPacket(
-                partFrame = PartFrame(
-                    width = shot.width,
-                    height = shot.height,
-                    colors = colors,
-                    x = x,
-                    y = y
+
+        val sentColors = sentFrames
+            .getOrPut(x) { mutableMapOf() }
+            .getOrPut(y) { colors }
+
+        if (sentColors != colors) {
+            println("new")
+            sentFrames.getValue(x)[y] = colors
+
+            sendGateway.send(
+                NetworkPacket(
+                    partFrame = PartFrame(
+                        width = shot.width,
+                        height = shot.height,
+                        colors = colors,
+                        x = x,
+                        y = y
+                    )
                 )
             )
-        )
+        } else {
+            println("old")
+        }
     }
 }

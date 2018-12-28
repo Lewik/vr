@@ -40,6 +40,19 @@ class UiController @Autowired constructor(
                         )
                     }
                 }
+
+
+//                graphics.color = Color(
+//                    (Math.random() * 255).toInt(),
+//                    (Math.random() * 255).toInt(),
+//                    (Math.random() * 255).toInt()
+//                )
+//                graphics.fillRect(
+//                    packet.x - 1,
+//                    packet.y - 1,
+//                    50 + 1,
+//                    50 + 1
+//                )
             }
             is Speed -> {
                 ui.speed.text = packet.speed.toString()
