@@ -12,5 +12,7 @@ pluginManagement {
 }
 rootProject.name = 'vr'
 
+include 'jvmClient'
+include 'jvmServer'
 
-enableFeaturePreview('GRADLE_METADATA')
+//enableFeaturePreview('GRADLE_METADATA')
