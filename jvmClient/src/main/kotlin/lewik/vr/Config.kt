@@ -58,14 +58,12 @@ class Config {
             it.clientMode(true)
             // it.autoStartup(true)
         })
-//        .handle { payload: ByteArray, _ -> println("Receiving ${payload.size}");payload }
+        .handle { payload: ByteArray, _ -> println("Receiving ${payload.size}");payload }
         .channel(MessageChannels.queue())
         .bridge { it.poller { p -> p.fixedRate(0) } }
         .transform { payload: ByteArray -> CBOR.load<NetworkPacket>(payload) }
         .transform { payload: NetworkPacket ->
-            if (payload.deltaFrame != null) {
-                payload.deltaFrame
-            } else if (payload.partFrame != null) {
+            if (payload.partFrame != null) {
                 payload.partFrame
             } else {
                 throw IllegalArgumentException(payload.toString())

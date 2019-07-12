@@ -31,11 +31,11 @@ class Screenshooter @Autowired constructor(
         println("Screenshoting")
         val screenSize = Toolkit.getDefaultToolkit().screenSize
 
-        val shot = robot.createScreenCapture(Rectangle(0, 0, screenSize.width, screenSize.height))
+        val shot = robot.createScreenCapture(Rectangle(0, 0, screenSize.width / 3, screenSize.height))
 
 
         val newParts =
-            (0 until (screenSize.width - DEFAULT_PART_FRAME_WIDTH) step DEFAULT_PART_FRAME_WIDTH).flatMap { startX ->
+            (0 until (screenSize.width / 3 - DEFAULT_PART_FRAME_WIDTH) step DEFAULT_PART_FRAME_WIDTH).flatMap { startX ->
                 (0 until (screenSize.height - DEFAULT_PART_FRAME_HEIGHT) step DEFAULT_PART_FRAME_HEIGHT).mapNotNull { startY ->
                     getPartFrame(shot, startX, startY)
                 }
@@ -52,7 +52,7 @@ class Screenshooter @Autowired constructor(
 
 
     private fun getPartFrame(shot: BufferedImage, startX: Int, startY: Int): NetworkPacket? {
-        val colors =
+        val currentColors =
             (startX until ((startX + DEFAULT_PART_FRAME_WIDTH))).flatMap { x ->
                 (startY until (startY + DEFAULT_PART_FRAME_HEIGHT)).mapNotNull { y ->
                     try {
@@ -65,17 +65,23 @@ class Screenshooter @Autowired constructor(
                 }
             }
 
-        val sentColors = sentPartFrames.getOrPut(startX) { mutableMapOf() }[startY]
+        val previousColors = sentPartFrames.getOrPut(startX) { mutableMapOf() }[startY]
 
-        return if (sentColors != colors) {
+        return if (previousColors != currentColors) {
             //println("new")
-            sentPartFrames.getValue(startX)[startY] = colors
+            sentPartFrames.getValue(startX)[startY] = currentColors
+
+            val deltaColors = if (previousColors != null) {
+                currentColors.zip(previousColors) { current, previous -> if (current == previous) null else current }
+            } else {
+                currentColors
+            }
 
             NetworkPacket(
                 partFrame = PartFrame(
                     width = null,
                     height = null,
-                    colors = colors,
+                    colors = deltaColors,
                     startX = startX,
                     startY = startY
                 )

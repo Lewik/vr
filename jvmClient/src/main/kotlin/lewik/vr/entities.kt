@@ -7,8 +7,7 @@ interface UiPacket
 
 @Serializable
 data class NetworkPacket(
-    val partFrame: PartFrame? = null,
-    val deltaFrame: DeltaFrame? = null
+    val partFrame: PartFrame? = null
 )
 
 interface VrFrame : UiPacket
@@ -22,12 +21,7 @@ data class PartFrame(
     val height: Int?, //null - default
     val startX: Int,
     val startY: Int,
-    val colors: List<Int>
-) : VrFrame
-
-@Serializable
-data class DeltaFrame(
-    val colors: List<Triple<Int, Int, Int>>
+    val colors: List<Int?>
 ) : VrFrame
 
 

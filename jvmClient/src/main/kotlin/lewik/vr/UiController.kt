@@ -32,13 +32,16 @@ class UiController @Autowired constructor(
                 (0 until DEFAULT_PART_FRAME_WIDTH).forEach { x ->
                     (0 until DEFAULT_PART_FRAME_HEIGHT).forEach { y ->
                         try {
-                            graphics.color = Color(packet.colors[i++])
-                            graphics.drawLine(
-                                packet.startX + x,
-                                packet.startY + y,
-                                packet.startX + x,
-                                packet.startY + y
-                            )
+                            val color = packet.colors[i++]
+                            if (color != null) {
+                                graphics.color = Color(color)
+                                graphics.drawLine(
+                                    packet.startX + x,
+                                    packet.startY + y,
+                                    packet.startX + x,
+                                    packet.startY + y
+                                )
+                            }
                         } catch (e: Throwable) {
                             println("asd")
                         }
