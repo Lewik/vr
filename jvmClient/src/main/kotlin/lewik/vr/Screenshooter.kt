@@ -9,13 +9,14 @@ import java.awt.Robot
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.util.*
+import kotlin.concurrent.schedule
 
 @Service
 class Screenshooter @Autowired constructor(
     private val sendGateway: SendGateway
 ) {
 
-    private var timerDelay: Int? = null
+    private var timerDelay: Long? = null
 
     @Value("\${frame_delay}")
     private var timerDelaySetting: Int? = null
@@ -27,7 +28,7 @@ class Screenshooter @Autowired constructor(
 
     fun toggleScreenshooting() {
         if (timerDelay == null) {
-            timerDelay = timerDelaySetting
+            timerDelay = timerDelaySetting!!.toLong()
             startScreenshoting()
         } else {
             timerDelay = null
