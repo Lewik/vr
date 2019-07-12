@@ -1,6 +1,7 @@
 package lewik.vr
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.awt.MouseInfo
 import java.awt.Rectangle
@@ -8,24 +9,25 @@ import java.awt.Robot
 import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.util.*
-import kotlin.concurrent.schedule
 
 @Service
 class Screenshooter @Autowired constructor(
     private val sendGateway: SendGateway
 ) {
-    private var timerDelay: Long? = null
-    private val timerDelayDefault = 50L
+
+    private var timerDelay: Int? = null
+
+    @Value("\${frame_delay}")
+    private var timerDelaySetting: Int? = null
 
     private val robot = Robot()
 
     @Volatile
     var mousePosition: Pair<Int, Int>? = null
-    var previousMousePosition: Pair<Int, Int>? = null
 
     fun toggleScreenshooting() {
         if (timerDelay == null) {
-            timerDelay = timerDelayDefault
+            timerDelay = timerDelaySetting
             startScreenshoting()
         } else {
             timerDelay = null
