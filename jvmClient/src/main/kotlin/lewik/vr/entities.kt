@@ -3,16 +3,17 @@ package lewik.vr
 import kotlinx.serialization.Serializable
 
 
-interface UiPacket
-
 @Serializable
 data class NetworkPacket(
-    val partFrame: PartFrame? = null
+    val partFrame: PartFrame? = null,
+    val mousePosition: MousePosition? = null
 )
 
 
 const val DEFAULT_PART_FRAME_WIDTH = 50
 const val DEFAULT_PART_FRAME_HEIGHT = 50
+
+sealed class UiPacket
 
 @Serializable
 data class PartFrame(
@@ -21,10 +22,16 @@ data class PartFrame(
     val startX: Int,
     val startY: Int,
     val colors: List<Int?>
-) : UiPacket
+) : UiPacket()
+
+
+@Serializable
+data class MousePosition(
+    val point: Pair<Int, Int>
+) : UiPacket()
 
 
 @Serializable
 data class Speed(
     val speed: Int
-) : UiPacket
+) : UiPacket()

@@ -2,6 +2,7 @@ package lewik.vr
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.awt.MouseInfo
 import java.awt.Rectangle
 import java.awt.Robot
 import java.awt.Toolkit
@@ -14,9 +15,13 @@ class Screenshooter @Autowired constructor(
     private val sendGateway: SendGateway
 ) {
     private var timerDelay: Long? = null
-    private val timerDelayDefault = 100L
+    private val timerDelayDefault = 50L
 
     private val robot = Robot()
+
+    @Volatile
+    var mousePosition: Pair<Int, Int>? = null
+    var previousMousePosition: Pair<Int, Int>? = null
 
     fun toggleScreenshooting() {
         if (timerDelay == null) {
@@ -28,7 +33,7 @@ class Screenshooter @Autowired constructor(
     }
 
     fun startScreenshoting() {
-        println("Screenshoting")
+//        println("Screenshoting")
         val screenSize = Toolkit.getDefaultToolkit().screenSize
 
         val shot = robot.createScreenCapture(Rectangle(0, 0, screenSize.width / 3, screenSize.height))
@@ -40,8 +45,10 @@ class Screenshooter @Autowired constructor(
                     getPartFrame(shot, startX, startY)
                 }
             }
-        println("parts: ${newParts.size}")
+//        println("parts: ${newParts.size}")
         newParts.forEach { sendGateway.send(it) }
+
+        sendGateway.send(NetworkPacket(mousePosition = MousePosition(MouseInfo.getPointerInfo().location.let { it.x to it.y })))
 
         if (timerDelay != null) {
             Timer("", false).schedule(timerDelay!!) { startScreenshoting() }

@@ -63,10 +63,10 @@ class Config {
         .bridge { it.poller { p -> p.fixedRate(0) } }
         .transform { payload: ByteArray -> CBOR.load<NetworkPacket>(payload.decompress()) }
         .transform { payload: NetworkPacket ->
-            if (payload.partFrame != null) {
-                payload.partFrame
-            } else {
-                throw IllegalArgumentException(payload.toString())
+            when {
+                payload.partFrame != null -> payload.partFrame
+                payload.mousePosition != null -> payload.mousePosition
+                else -> throw IllegalArgumentException(payload.toString())
             }
         }
         .channel(uiChannel())
