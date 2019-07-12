@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import java.awt.Rectangle
 import java.awt.Robot
 import java.awt.Toolkit
+import java.awt.image.BufferedImage
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -13,7 +14,7 @@ class Screenshooter @Autowired constructor(
     private val sendGateway: SendGateway
 ) {
     private var timerDelay: Long? = null
-    private val timerDelayDefault = 1000L
+    private val timerDelayDefault = 100L
 
     private val robot = Robot()
 
@@ -30,56 +31,58 @@ class Screenshooter @Autowired constructor(
         println("Screenshoting")
         val screenSize = Toolkit.getDefaultToolkit().screenSize
 
-        val frameWidth = 50
-        val frameHeight = 50
+        val shot = robot.createScreenCapture(Rectangle(0, 0, screenSize.width, screenSize.height))
 
-        for (x in 0..screenSize.width step 50) {
-            for (y in 0..screenSize.height step 50) {
-                sendFrame(x, y, frameWidth, frameHeight)
+
+        val newParts =
+            (0 until (screenSize.width - DEFAULT_PART_FRAME_WIDTH) step DEFAULT_PART_FRAME_WIDTH).flatMap { startX ->
+                (0 until (screenSize.height - DEFAULT_PART_FRAME_HEIGHT) step DEFAULT_PART_FRAME_HEIGHT).mapNotNull { startY ->
+                    getPartFrame(shot, startX, startY)
+                }
             }
-        }
-
+        println("parts: ${newParts.size}")
+        newParts.forEach { sendGateway.send(it) }
 
         if (timerDelay != null) {
             Timer("", false).schedule(timerDelay!!) { startScreenshoting() }
         }
     }
 
-    val sentFrames = mutableMapOf<Int, MutableMap<Int, List<Int>>>()
+    private val sentPartFrames = mutableMapOf<Int, MutableMap<Int, List<Int>>>()
 
 
-    private fun sendFrame(x: Int, y: Int, frameWidth: Int, frameHeight: Int) {
-        val shot = robot.createScreenCapture(Rectangle(x, y, frameWidth, frameHeight))
-
-        val colors = mutableListOf<Int>()
-        (0 until shot.width).forEach { x ->
-            (0 until shot.height).forEach { y ->
-                val color = shot.getRGB(x, y)
-                colors.add(color)
+    private fun getPartFrame(shot: BufferedImage, startX: Int, startY: Int): NetworkPacket? {
+        val colors =
+            (startX until ((startX + DEFAULT_PART_FRAME_WIDTH))).flatMap { x ->
+                (startY until (startY + DEFAULT_PART_FRAME_HEIGHT)).mapNotNull { y ->
+                    try {
+                        shot.getRGB(x, y)
+                    } catch (e: Throwable) {
+                        println("start: $startX $startY pixel: $x $y shotHW: ${shot.width} ${shot.height}")
+                        println(e)
+                        null
+                    }
+                }
             }
-        }
 
-        val sentColors = sentFrames
-            .getOrPut(x) { mutableMapOf() }
-            .getOrPut(y) { colors }
+        val sentColors = sentPartFrames.getOrPut(startX) { mutableMapOf() }[startY]
 
-        if (sentColors != colors) {
-            println("new")
-            sentFrames.getValue(x)[y] = colors
+        return if (sentColors != colors) {
+            //println("new")
+            sentPartFrames.getValue(startX)[startY] = colors
 
-            sendGateway.send(
-                NetworkPacket(
-                    partFrame = PartFrame(
-                        width = shot.width,
-                        height = shot.height,
-                        colors = colors,
-                        x = x,
-                        y = y
-                    )
+            NetworkPacket(
+                partFrame = PartFrame(
+                    width = null,
+                    height = null,
+                    colors = colors,
+                    startX = startX,
+                    startY = startY
                 )
             )
         } else {
-            println("old")
+            //println("old")
+            null
         }
     }
 }

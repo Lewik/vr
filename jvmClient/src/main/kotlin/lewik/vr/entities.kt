@@ -13,12 +13,15 @@ data class NetworkPacket(
 
 interface VrFrame : UiPacket
 
+const val DEFAULT_PART_FRAME_WIDTH = 50
+const val DEFAULT_PART_FRAME_HEIGHT = 50
+
 @Serializable
 data class PartFrame(
-    val width: Int,
-    val height: Int,
-    val x: Int,
-    val y: Int,
+    val width: Int?, //null - default
+    val height: Int?, //null - default
+    val startX: Int,
+    val startY: Int,
     val colors: List<Int>
 ) : VrFrame
 

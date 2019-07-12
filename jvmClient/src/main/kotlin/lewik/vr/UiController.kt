@@ -29,15 +29,19 @@ class UiController @Autowired constructor(
             is PartFrame -> {
                 val graphics = ui.drawPanel.graphics
                 var i = 0
-                (0 until packet.width).forEach { x ->
-                    (0 until packet.height).forEach { y ->
-                        graphics.color = Color(packet.colors[i++])
-                        graphics.drawLine(
-                            packet.x + x,
-                            packet.y + y,
-                            packet.x + x,
-                            packet.y + y
-                        )
+                (0 until DEFAULT_PART_FRAME_WIDTH).forEach { x ->
+                    (0 until DEFAULT_PART_FRAME_HEIGHT).forEach { y ->
+                        try {
+                            graphics.color = Color(packet.colors[i++])
+                            graphics.drawLine(
+                                packet.startX + x,
+                                packet.startY + y,
+                                packet.startX + x,
+                                packet.startY + y
+                            )
+                        } catch (e: Throwable) {
+                            println("asd")
+                        }
                     }
                 }
 
@@ -48,8 +52,8 @@ class UiController @Autowired constructor(
 //                    (Math.random() * 255).toInt()
 //                )
 //                graphics.fillRect(
-//                    packet.x - 1,
-//                    packet.y - 1,
+//                    packet.startX - 1,
+//                    packet.startY - 1,
 //                    50 + 1,
 //                    50 + 1
 //                )
