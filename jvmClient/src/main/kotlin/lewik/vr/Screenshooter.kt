@@ -36,7 +36,7 @@ class Screenshooter @Autowired constructor(
 //        println("Screenshoting")
         val screenSize = Toolkit.getDefaultToolkit().screenSize
 
-        val shot = robot.createScreenCapture(Rectangle(0, 0, screenSize.width / 3, screenSize.height))
+        val shot = robot.createScreenCapture(Rectangle(0, 0, screenSize.width, screenSize.height))
 
 
         val newParts =

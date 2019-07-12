@@ -3,6 +3,7 @@ package lewik.vr
 import kotlinx.serialization.cbor.CBOR
 import kotlinx.serialization.dump
 import kotlinx.serialization.load
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.integration.annotation.Gateway
@@ -83,9 +84,15 @@ class Config {
         .get()!!
 
 
+    @Value("\${server_address}")
+    private val serverAddress: String? = null
+
+    @Value("\${server_port}")
+    private val serverPort: Int? = null
+
     @Bean
     fun clientConnectionFactory(): TcpNetClientConnectionFactory {
-        val factory = TcpNetClientConnectionFactory("localhost", 61000)
+        val factory = TcpNetClientConnectionFactory(serverAddress!!, serverPort!!)
         factory.isSingleUse = false
         factory.deserializer = TcpCodecs.lengthHeader4().also { it.maxMessageSize = Short.MAX_VALUE.toInt() }
         factory.serializer = TcpCodecs.lengthHeader4().also { it.maxMessageSize = Short.MAX_VALUE.toInt() }

@@ -1,13 +1,17 @@
 package lewik.vr
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication
+import org.springframework.boot.builder.SpringApplicationBuilder
 
 
 @SpringBootApplication
-class Server
+class Server {
 
-fun main(args: Array<String>) {
-    runApplication<Server>(*args)
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            SpringApplicationBuilder(Server::class.java).headless(false).run(*args)
+        }
+    }
 }
 

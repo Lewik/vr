@@ -72,5 +72,7 @@ dependencies {
     compile "org.springframework.integration:spring-integration-ip"
 }
 
+mainClassName = 'lewik.vr.Server'
+
 compileKotlin(kotlinJavaOptions)
 compileTestKotlin(kotlinJavaOptions)
