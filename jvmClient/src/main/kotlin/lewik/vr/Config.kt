@@ -34,7 +34,7 @@ class Config {
         speedCalculator: SpeedCalculator
     ) = IntegrationFlows
         .from("outputChannel")
-        .transform { networkPacket: NetworkPacket -> CBOR().dump(networkPacket) }
+        .transform { networkPacket: NetworkPacket -> CBOR().dump(networkPacket).compress() }
         .channel(MessageChannels.queue())
         .bridge { it.poller { p -> p.fixedRate(0) } }
 //        .handle { payload: ByteArray, _ -> println("Sending ${payload.size} ${payload.size.toShort()}");payload }
@@ -61,7 +61,7 @@ class Config {
         .handle { payload: ByteArray, _ -> println("Receiving ${payload.size}");payload }
         .channel(MessageChannels.queue())
         .bridge { it.poller { p -> p.fixedRate(0) } }
-        .transform { payload: ByteArray -> CBOR.load<NetworkPacket>(payload) }
+        .transform { payload: ByteArray -> CBOR.load<NetworkPacket>(payload.decompress()) }
         .transform { payload: NetworkPacket ->
             if (payload.partFrame != null) {
                 payload.partFrame
