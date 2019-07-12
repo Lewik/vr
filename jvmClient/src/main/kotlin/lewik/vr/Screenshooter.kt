@@ -42,7 +42,7 @@ class Screenshooter @Autowired constructor(
 
 
         val newParts =
-            (0 until (screenSize.width / 3 - DEFAULT_PART_FRAME_WIDTH) step DEFAULT_PART_FRAME_WIDTH).flatMap { startX ->
+            (0 until (screenSize.width - DEFAULT_PART_FRAME_WIDTH) step DEFAULT_PART_FRAME_WIDTH).flatMap { startX ->
                 (0 until (screenSize.height - DEFAULT_PART_FRAME_HEIGHT) step DEFAULT_PART_FRAME_HEIGHT).mapNotNull { startY ->
                     getPartFrame(shot, startX, startY)
                 }
