@@ -22,6 +22,6 @@ class SpeedCalculator(
         toDelete.forEach { entries.remove(it) }
 
         val speed = entries.values.sum() / calculateRange
-        uiGateway.send(Speed(speed))
+        //uiGateway.send(Speed(speed))
     }
 }

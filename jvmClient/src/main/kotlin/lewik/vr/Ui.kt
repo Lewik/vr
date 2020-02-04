@@ -2,29 +2,54 @@ package lewik.vr
 
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.awt.Point
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
+import java.util.*
 import javax.swing.*
 
 
 class Ui(
     uiController: UiController
 ) : JFrame() {
-    lateinit var remoteScreenDrawPanel: JPanel
-    lateinit var remoteMouseDrawPanel: RemoteMouseDrawPanel
-    lateinit var speed: JTextPane
+    var tabbedPane: JTabbedPane
+    var remoteScreenDrawPanel: JPanel
+    var remoteMouseDrawPanel: RemoteMouseDrawPanel
+    var speed: JTextPane
+    var sendUuid: JTextPane
+    var receiveUuid: JTextPane
+    var startStopSendButton: JButton
+    var startStopReceiveButton: JButton
 
     init {
         preferredSize = Dimension(400, 400)
 
-        val button = JButton("Show")
-        button.addActionListener { event ->
-            uiController.toggleScreenshooting()
+        val test = UUID.randomUUID().toString()
+        sendUuid = JTextPane().also { it.text = test }
+        receiveUuid = JTextPane().also { it.text = test }
+
+        startStopSendButton = JButton("Start send")
+        startStopSendButton.addActionListener {
+            uiController.toggleScreenshooting(sendUuid.text)
+            startStopSendButton.text = if (startStopSendButton.text == "Start send") {
+                "Stop send"
+            } else {
+                "Start send"
+            }
+        }
+
+        startStopReceiveButton = JButton("Start receive")
+        startStopReceiveButton.addActionListener {
+            uiController.toggleReceiving(receiveUuid.text)
+            startStopReceiveButton.text = if (startStopReceiveButton.text == "Start receive") {
+                "Stop receive"
+            } else {
+                "Start receive"
+            }
         }
 
         speed = JTextPane()
+
 
 
         remoteScreenDrawPanel = JPanel().apply {
@@ -40,7 +65,7 @@ class Ui(
         }
 
         remoteMouseDrawPanel = RemoteMouseDrawPanel().apply {
-//            isOpaque = false
+            //            isOpaque = false
             preferredSize = Dimension(300, 300)
             layout = SpringLayout()
 //            location = remoteScreenDrawPanel.location
@@ -52,12 +77,26 @@ class Ui(
         }
 
 
-        val container = this.contentPane
-//        container.layout = SpringLayout()
-        container.add(button, BorderLayout.PAGE_START)
-        container.add(remoteScreenDrawPanel, BorderLayout.CENTER)
-//        container.add(remoteMouseDrawPanel, BorderLayout.CENTER)
-        container.add(speed, BorderLayout.PAGE_END)
+        val receivePanel = JPanel().also {
+            it.layout = BorderLayout()
+            it.add(startStopReceiveButton, BorderLayout.PAGE_START)
+            it.add(remoteScreenDrawPanel, BorderLayout.CENTER)
+            it.add(receiveUuid, BorderLayout.PAGE_END)
+        }
+
+        val sendPanel = JPanel().also {
+            it.layout = BorderLayout()
+            it.add(startStopSendButton, BorderLayout.PAGE_START)
+            it.add(sendUuid, BorderLayout.PAGE_END)
+        }
+
+        tabbedPane = JTabbedPane().also {
+            it.addTab("Send", sendPanel)
+            it.addTab("Receive", receivePanel)
+        }
+
+        this.contentPane.add(tabbedPane)
+
 
         this.pack()
         this.isVisible = true

@@ -7,7 +7,8 @@ import java.awt.event.MouseEvent
 
 @Service
 class UiController @Autowired constructor(
-    private val screenshooter: Screenshooter
+    private val screenshooter: Screenshooter,
+    private val handler: Handler
 ) {
 
     var ui: Ui? = null
@@ -72,8 +73,12 @@ class UiController @Autowired constructor(
         }
     }
 
-    fun toggleScreenshooting() {
-        screenshooter.toggleScreenshooting()
+    fun toggleScreenshooting(sendUuid: String) {
+        screenshooter.toggleScreenshooting(sendUuid)
+    }
+
+    fun toggleReceiving(sendUuid: String) {
+        handler.toggleReceive(sendUuid)
     }
 
 
